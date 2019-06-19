@@ -56,6 +56,11 @@ export class ECSQLDatabase {
 	 */
 	public static async query(command: string): Promise<any> {
 
+		if (!ECSQLDatabase.databasePool) {
+			console.error("You must call ECSQLDatabase.init() before you can access your SQL server.");
+			process.exit(0);
+		}
+
 		if (this.verbose) console.log(`Running SQL Command: '${command}'.`);
 
 		return new Promise((resolve: Function, reject: Function): void => {
