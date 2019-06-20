@@ -105,7 +105,8 @@ class User extends ECSQLObject<UserProps> {
 }
 
 ECSQLDatabase.init({
-	database: "nosql"
+	database: "nosql",
+	verbose: true
 });
 
 /**

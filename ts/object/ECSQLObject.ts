@@ -80,31 +80,7 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 		const encodedPreOverride: ECSQLObjectRow<Props> = await this.encode();
 		const overrideValuesFromSelf: ECSQLObjectRowOverride<Props> = await this.overrideEncoding(encodedPreOverride.toMap());
 
-		let newEncodedData: ECSQLObjectRowOverride<Props> = new ECMap<ECSQLObjectRowAcceptedKeyType<Props>, ECSQLObjectRowAcceptedValueType>();
-
-		overrideValuesFromSelf.forEach((key: ECSQLObjectRowAcceptedKeyType<Props>, value: ECSQLObjectRowAcceptedValueType) => {
-
-			if (typeof value === "string") {
-
-				if (value.charAt(0) !== "'" || value.charAt(value.length - 1) !== "'") {
-
-					newEncodedData.set(key, `'${value}'`);
-
-				} else {
-
-					newEncodedData.set(key, value);
-
-				}
-
-			} else {
-
-				newEncodedData.set(key, value);
-
-			}
-
-		});
-
-		return newEncodedData.toDictionary();
+		return overrideValuesFromSelf.toDictionary();
 		
 	}
 
@@ -183,8 +159,13 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 			const type: ECSQLValue = types[key];
 			let value: any = this.props[key];
 
-			if (type === "boolean") value = value === true ? 1 : 0;
-			else if (type === "array" || type === "object" || type === "buffer") {
+
+			if (type === "number" || type === "boolean") {
+
+				if (type === "boolean") map.set(key, value ? 1 : 0);
+				else map.set(key, value);
+
+			} else if (type === "array" || type === "object" || type === "buffer") {
 
 				let data: Buffer;
 
@@ -218,9 +199,13 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 				}
 
-			}
+				map.set(key, SQLString.escape(value));
 
-			map.set(key, SQLString.escape(value));
+			} else if (type === "string") {
+
+				map.set(key, SQLString.escape(value));
+
+			}
 
 		}
 
