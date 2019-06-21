@@ -46,63 +46,7 @@ import {
 } from "..";
 import * as Crypto from "crypto";
 import { ECArray } from "@elijahjcobb/collections";
-
-
-interface UserProps {
-	firstName: string;
-	lastName: string;
-	email: string;
-	age: number;
-	isMale: boolean;
-	birthday: string;
-}
-
-class MyDate {
-
-	public day: string;
-
-	public constructor(day: string) {
-		this.day = day;
-	}
-
-}
-
-class User extends ECSQLObject<UserProps> {
-
-	public birthday: MyDate | undefined;
-
-	public constructor() {
-
-		super("user", {
-			firstName: "string",
-			lastName: "string",
-			email: "string",
-			age: "number",
-			isMale: "boolean",
-			birthday: "string"
-		});
-
-	}
-
-	public async overrideEncoding(encoded: ECSQLObjectRowOverride<UserProps>): Promise<ECSQLObjectRowOverride<UserProps>> {
-
-		if (this.birthday) {
-
-			encoded.set("birthday", this.birthday.day);
-
-		}
-
-		return encoded;
-
-	}
-
-	public async overrideDecoding(row: ECSQLObjectRow<UserProps>): Promise<void> {
-
-		this.birthday = new MyDate(row.get("birthday") as string);
-
-	}
-
-}
+import { User, MyDate, UserProps } from "./User";
 
 ECSQLDatabase.init({
 	database: "nosql",
@@ -219,7 +163,7 @@ describe("Mutating Objects", () => {
 		await u.updateProps("birthday");
 		const uAgain: User = await ECSQLQuery.getObjectWithId(User, "LyHRfFxeCTZtquMy");
 
-		expect(u.birthday.day).toEqual(uAgain.birthday.day);
+		expect(u.birthday.getDay()).toEqual(uAgain.birthday.getDay());
 
 	});
 

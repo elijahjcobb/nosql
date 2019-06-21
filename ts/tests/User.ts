@@ -22,23 +22,62 @@
  *
  */
 
-import { ECSQLDatabase } from "..";
-import { MyDate, User } from "./User";
+import { ECSQLObject } from "..";
 
-ECSQLDatabase.init({
-	database: "nosql",
-	verbose: true
-});
+export class MyDate {
 
-(async (): Promise<void> => {
+	private day: string;
 
+	public constructor(day: string) {
 
-	let u: User = new User();
-	u.props.firstName = "Elijah";
-	u.props.email = `eli"jah@'elijahcobb.com`;
-	u.birthday = new MyDate("06031999");
-	u.id = "ZZZZZZ";
+		this.day = day;
 
-	(await u.encode()).print();
+	}
 
-})().then(() => {}).catch((err: any) => err.print());
+	public getDay(): string {
+
+		return this.day;
+
+	}
+
+}
+
+export interface UserProps {
+	firstName: string;
+	lastName: string;
+	email: string;
+	age: number;
+	isMale: boolean;
+	birthday: string;
+}
+
+export class User extends ECSQLObject<UserProps> {
+
+	public birthday: MyDate | undefined;
+
+	public constructor() {
+
+		super("user", {
+			firstName: "string",
+			lastName: "string",
+			email: "string",
+			age: "number",
+			isMale: "boolean",
+			birthday: "string"
+		});
+
+	}
+
+	public async overrideEncoding(): Promise<void> {
+
+		this.props.birthday = this.birthday.getDay();
+
+	}
+
+	public async overrideDecoding(): Promise<void> {
+
+		this.birthday = new MyDate(this.props.birthday);
+
+	}
+
+}

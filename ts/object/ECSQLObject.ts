@@ -73,18 +73,6 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 	}
 
 	/**
-	 * Used internally to handle processing of values on self by overriding the overrideEncoding() method.
-	 */
-	private async getEncodedData(): Promise<ECSQLObjectRow<Props>> {
-		
-		const encodedPreOverride: ECSQLObjectRow<Props> = await this.encode();
-		const overrideValuesFromSelf: ECSQLObjectRowOverride<Props> = await this.overrideEncoding(encodedPreOverride.toMap());
-
-		return overrideValuesFromSelf.toDictionary();
-		
-	}
-
-	/**
 	 * Handles notifications and optional overriding functions.
 	 * @param notification The notification type.
 	 */
@@ -148,6 +136,8 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 	 * Encodes an object and its properties into a data structure applicable for a SQL row.
 	 */
 	public async encode(): Promise<ECSQLObjectRow<Props>> {
+
+		await this.overrideEncoding();
 
 		let map: ECMap<ECSQLObjectRowAcceptedKeyType<Props>, ECSQLObjectRowAcceptedValueType> = new ECMap<ECSQLObjectRowAcceptedKeyType<Props>, ECSQLObjectRowAcceptedValueType>();
 		let types: ECSQLObjectTypes<Props> = this.types;
@@ -216,16 +206,6 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 		await this.handleNotification(ECSQLNotification.Encoded);
 
 		return map.toDictionary();
-
-	}
-
-	/**
-	 * You may override this function to allow encoding your own values on your object.
-	 * @param encoded The encoded value that was created automatically.
-	 */
-	public async overrideEncoding(encoded: ECSQLObjectRowOverride<Props>): Promise<ECSQLObjectRowOverride<Props>> {
-
-		return encoded;
 
 	}
 
@@ -307,16 +287,22 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 		}
 
-		await this.overrideDecoding(row);
+		await this.overrideDecoding();
 		await this.handleNotification(ECSQLNotification.Decoded);
 
 	}
 
 	/**
+	 * You may override this function to allow encoding your own values on your object.
+	 * @param encoded The encoded value that was created automatically.
+	 */
+	public async overrideEncoding(): Promise<void> {}
+
+	/**
 	 * You may override this function to allow decoding your own values on your object.
 	 * @param row The row object received from the ECSQLQuery class.
 	 */
-	public async overrideDecoding(row: ECSQLObjectRow<Props>): Promise<void> {}
+	public async overrideDecoding(): Promise<void> {}
 
 	/**
 	 * Pretty prints this object into the console.
@@ -400,7 +386,7 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 			this.createdAt = Date.now();
 			this.id = ECGenerator.randomId();
 
-			let map: ECSQLObjectRow<Props> = await this.getEncodedData();
+			let map: ECSQLObjectRow<Props> = await this.encode();
 			const keys: string[] = map.keys().toNativeArray() as string[];
 			const values: (string | number)[] = map.values().toNativeArray();
 
@@ -466,7 +452,7 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 		this.updatedAt = Date.now();
 
-		let map: ECSQLObjectRow<Props> = await this.getEncodedData();
+		let map: ECSQLObjectRow<Props> = await this.encode();
 		let parameters: ECArrayList<string> = new ECArrayList<string>();
 		map.forEach((key: string, value: any) => parameters.add(key + "=" + value));
 
@@ -495,7 +481,7 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 		this.updatedAt = Date.now();
 		if (keys.indexOf("updatedAt") === -1) keys.push("updatedAt");
 
-		let map: ECSQLObjectRow<Props> = await this.getEncodedData();
+		let map: ECSQLObjectRow<Props> = await this.encode();
 		let parameters: ECArrayList<string> = new ECArrayList<string>();
 
 		for (let i: number = 0; i < keys.length; i ++) {
