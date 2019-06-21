@@ -1,6 +1,6 @@
 {
   "name": "@elijahjcobb/nosql",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A smart SQL database manager with easy and quick to use query and object management features.",
   "main": "dist/index",
   "types": "dist/index",
@@ -40,6 +40,7 @@
     "@elijahjcobb/collections": "latest",
     "@elijahjcobb/encryption": "latest",
     "@elijahjcobb/error": "latest",
+    "@elijahjcobb/sql-cmd": "latest",
     "@types/jest": "^24.0.14",
     "@types/mysql": "latest",
     "@types/node": "^12.0.8",
