@@ -26,7 +26,7 @@ import { ECErrorOriginType, ECErrorStack, ECErrorType } from "@elijahjcobb/error
 import { ECArrayList, ECDictionary, ECMap } from "@elijahjcobb/collections";
 import { ECSQLDatabase } from "../ECSQLDatabase";
 import { ECGenerator } from "@elijahjcobb/encryption";
-import * as SQLString from "sqlstring";
+import { ECSQLCMD, ECSQLCMDQuery } from "@elijahjcobb/sql-cmd";
 
 /**
  * Types
@@ -189,17 +189,17 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 				}
 
-				map.set(key, SQLString.escape(value));
+				map.set(key, value);
 
 			} else if (type === "string") {
 
-				map.set(key, SQLString.escape(value));
+				map.set(key, value);
 
 			}
 
 		}
 
-		map.set("id", SQLString.escape(this.id));
+		map.set("id", this.id);
 		map.set("updatedAt", this.updatedAt);
 		map.set("createdAt", this.createdAt);
 
@@ -293,15 +293,11 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 	}
 
 	/**
-	 * You may override this function to allow encoding your own values on your object.
-	 * @param encoded The encoded value that was created automatically.
+	 * You may override the two following methods to allow custom properties on your class. Just make a prop on
+	 * your object that is a base type that your objects can conform to. In these functions, set to and pull from
+	 * the props with your own properties.
 	 */
 	public async overrideEncoding(): Promise<void> {}
-
-	/**
-	 * You may override this function to allow decoding your own values on your object.
-	 * @param row The row object received from the ECSQLQuery class.
-	 */
 	public async overrideDecoding(): Promise<void> {}
 
 	/**
@@ -368,6 +364,8 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 		if (this.id !== undefined && this.id !== null) {
 
+			console.log(this.id);
+
 			let stack: ECErrorStack = ECErrorStack.newWithMessageAndType(
 				ECErrorOriginType.BackEnd,
 				ECErrorType.InvalidRequest,
@@ -387,17 +385,14 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 			this.id = ECGenerator.randomId();
 
 			let map: ECSQLObjectRow<Props> = await this.encode();
-			const keys: string[] = map.keys().toNativeArray() as string[];
-			const values: (string | number)[] = map.values().toNativeArray();
-
 			let newID: string = ECGenerator.randomId();
 
-			let table: string = this.table;
-			let command: string = `INSERT INTO ${table} (${keys.join(",")}) VALUES (${values.join(",")});`;
+			let cmd: ECSQLCMD = ECSQLCMD.insert(this.table);
+			map.forEach((key: string, value: ECSQLValue) => cmd.set(key, value));
 
 			try {
 
-				await ECSQLDatabase.query(command);
+				await ECSQLDatabase.query(cmd.generate());
 
 			} catch (e) {
 
@@ -453,12 +448,10 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 		this.updatedAt = Date.now();
 
 		let map: ECSQLObjectRow<Props> = await this.encode();
-		let parameters: ECArrayList<string> = new ECArrayList<string>();
-		map.forEach((key: string, value: any) => parameters.add(key + "=" + value));
+		let cmd: ECSQLCMD = ECSQLCMD.update(this.table).where("id", "=", this.id);
+		map.forEach((key: string, value: ECSQLValue) => cmd.set(key, value));
 
-		let command: string = `UPDATE ${this.table} SET ${parameters.toString(", ")} WHERE id='${this.id}'`;
-		await ECSQLDatabase.query(command);
-
+		await ECSQLDatabase.query(cmd.generate());
 		await this.handleNotification(ECSQLNotification.Updated);
 
 	}
@@ -482,19 +475,10 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 		if (keys.indexOf("updatedAt") === -1) keys.push("updatedAt");
 
 		let map: ECSQLObjectRow<Props> = await this.encode();
-		let parameters: ECArrayList<string> = new ECArrayList<string>();
+		let cmd: ECSQLCMD = ECSQLCMD.update(this.table).where("id", "=", this.id);
+		for (let key of keys) cmd = cmd.set(key as string, map.get(key));
 
-		for (let i: number = 0; i < keys.length; i ++) {
-
-			const key: keyof Props = keys[i];
-			const value: any = map.get(key);
-			parameters.add(key + "=" + value);
-
-		}
-
-		let command: string = `UPDATE ${this.table} SET ${parameters.toString(", ")} WHERE id='${this.id}'`;
-		await ECSQLDatabase.query(command);
-
+		await ECSQLDatabase.query(cmd.generate());
 		await this.handleNotification(ECSQLNotification.Updated);
 
 	}
@@ -532,7 +516,7 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 		}
 
-		let command: string = `DELETE FROM ${this.table} WHERE id='${this.id}';`;
+		let command: string = ECSQLCMD.delete(this.table).where("id", "=", this.id).generate();
 		await ECSQLDatabase.query(command);
 
 		await this.handleNotification(ECSQLNotification.Deleted);
