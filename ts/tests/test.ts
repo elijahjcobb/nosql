@@ -22,23 +22,30 @@
  *
  */
 
-import { ECSQLDatabase } from "..";
+import { ECSQLDatabase, ECSQLQuery } from "..";
 import { MyDate, User } from "./User";
+import { ECErrorStack } from "@elijahjcobb/error";
 
 ECSQLDatabase.init({
 	database: "nosql",
-	verbose: true
+	verbose: true,
+	duplicateKeys: {
+		"user_email_uindex": "email"
+	}
 });
 
 (async (): Promise<void> => {
 
 
 	let u: User = new User();
-	u.props.firstName = "Elijah";
-	u.props.email = `eli"jah@'elijahcobb.com`;
-	u.birthday = new MyDate("06031999");
-	u.id = "ZZZZZZ";
+	u.props.email = "elijah@elijahcobb.com";
+	u.props.firstName = "BAD";
 
-	(await u.encode()).print();
+	await u.create();
 
-})().then(() => {}).catch((err: any) => err.print());
+})().then(() => {}).catch((err: any) => {
+
+	if (err instanceof ECErrorStack) err.print();
+	else console.error(err);
+
+});

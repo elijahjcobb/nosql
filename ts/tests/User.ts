@@ -53,7 +53,7 @@ export interface UserProps {
 
 export class User extends ECSQLObject<UserProps> {
 
-	public birthday: MyDate | undefined;
+	public birthday: MyDate | undefined = new MyDate("01011970");
 
 	public constructor() {
 
