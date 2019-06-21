@@ -33,7 +33,7 @@ import { ECSQLCMD, ECSQLCMDQuery } from "@elijahjcobb/sql-cmd";
  */
 export type ECSQLObjectPropAcceptedValueType = string | number | boolean | any[] | object | Buffer | undefined;
 export type ECSQLObjectRowAcceptedKeyType<Props> = keyof Props | "id" | "updatedAt" | "createdAt";
-export type ECSQLObjectRowAcceptedValueType = string | number;
+export type ECSQLObjectRowAcceptedValueType = string | number | boolean | Buffer;
 export type ECSQLObjectRow<Props> = ECDictionary<ECSQLObjectRowAcceptedKeyType<Props>, ECSQLObjectRowAcceptedValueType>;
 export type ECSQLObjectRowOverride<Props> = ECMap<ECSQLObjectRowAcceptedKeyType<Props>, ECSQLObjectRowAcceptedValueType>;
 export type ECSQLObjectTypes<T> = { [key in keyof T]: ECSQLValue };
@@ -155,27 +155,18 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 				if (type === "boolean") map.set(key, value ? 1 : 0);
 				else map.set(key, value);
 
-			} else if (type === "array" || type === "object" || type === "buffer") {
+			} else if (type === "array" || type === "object") {
 
 				let data: Buffer;
 
-				if (type === "array" || type === "object") {
+				try {
 
-					try {
+					const valueAsString: string = JSON.stringify(value);
+					data = Buffer.from(valueAsString, "utf8");
 
-						const valueAsString: string = JSON.stringify(value);
-						data = Buffer.from(valueAsString, "utf8");
+				} catch (e) {
 
-					} catch (e) {
-
-						ECSQLObject.handleInternalError(`Failed to convert ${key} of type ${type} to a Buffer.`);
-
-					}
-
-
-				} else {
-
-					data = value;
+					ECSQLObject.handleInternalError(`Failed to convert ${key} of type ${type} to a Buffer.`);
 
 				}
 
@@ -191,7 +182,7 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 				map.set(key, value);
 
-			} else if (type === "string") {
+			} else {
 
 				map.set(key, value);
 
