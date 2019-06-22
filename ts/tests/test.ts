@@ -37,11 +37,10 @@ ECSQLDatabase.init({
 (async (): Promise<void> => {
 
 
-	let u: User = new User();
-	u.props.email = "elijah@elijahcobb.com";
-	u.props.firstName = "BAD";
+	let u: User = await ECSQLQuery.getObjectWithId(User, "NMJJeXoxEMVZt66J");
+	console.log(u.toJSON());
+	console.log(u.getFilteredJSON("firstName", "id"));
 
-	await u.create();
 
 })().then(() => {}).catch((err: any) => {
 

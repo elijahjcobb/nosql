@@ -23,10 +23,10 @@
  */
 
 import { ECErrorOriginType, ECErrorStack, ECErrorType } from "@elijahjcobb/error";
-import { ECArrayList, ECDictionary, ECMap } from "@elijahjcobb/collections";
+import { ECDictionary, ECMap } from "@elijahjcobb/collections";
 import { ECSQLDatabase } from "../ECSQLDatabase";
 import { ECGenerator } from "@elijahjcobb/encryption";
-import { ECSQLCMD, ECSQLCMDQuery } from "@elijahjcobb/sql-cmd";
+import { ECSQLCMD } from "@elijahjcobb/sql-cmd";
 
 /**
  * Types
@@ -47,6 +47,7 @@ export enum ECSQLNotification {
 	Encoded = "Encoded",
 	Decoded = "Decoded"
 }
+export type ECSQLFilteredJSON<T> = { [P in keyof T]?: T[P]; } & { id?: string, updatedAt?: number, createdAt?: number };
 
 /**
  * An abstract class to extend. It takes a interface as a generic property.
@@ -130,6 +131,23 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 		return json;
 
+	}
+
+	/**
+	 * Similar to toJSON() however, specify keys that will be kept on.
+	 * @param keys
+	 */
+	public getFilteredJSON(...keys: ((keyof Props) | "id" | "updatedAt" | "createdAt")[]): ECSQLFilteredJSON<Props> {
+
+		let obj: object = this.toJSON();
+		let filteredObj: object = {};
+
+		for (let key of keys) {
+			// @ts-ignore
+			filteredObj[key] = obj[key];
+		}
+
+		return filteredObj;
 	}
 
 	/**
