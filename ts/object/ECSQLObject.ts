@@ -190,9 +190,11 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 		}
 
-		map.set("id", this.id);
-		map.set("updatedAt", this.updatedAt);
-		map.set("createdAt", this.createdAt);
+		if (this.id) {
+			map.set("id", this.id);
+			map.set("updatedAt", this.updatedAt);
+			map.set("createdAt", this.createdAt);
+		}
 
 		await this.handleNotification(ECSQLNotification.Encoded);
 
@@ -355,8 +357,6 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 		if (this.id !== undefined && this.id !== null) {
 
-			console.log(this.id);
-
 			let stack: ECErrorStack = ECErrorStack.newWithMessageAndType(
 				ECErrorOriginType.BackEnd,
 				ECErrorType.InvalidRequest,
@@ -373,7 +373,6 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 			this.updatedAt = Date.now();
 			this.createdAt = Date.now();
-			this.id = ECGenerator.randomId();
 
 			let map: ECSQLObjectRow<Props> = await this.encode();
 			let newID: string = ECGenerator.randomId();
