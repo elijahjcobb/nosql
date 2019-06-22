@@ -121,7 +121,10 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 	 */
 	protected async objectDidDecode(): Promise<void> {}
 
-	public toJSON(): object {
+	/**
+	 * Do not override.
+	 */
+	protected toJSON(): object {
 
 		let json: object = this.props;
 
@@ -130,6 +133,15 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 		json["createdAt"] = this.createdAt;
 
 		return json;
+
+	}
+
+	/**
+	 * Used to be overwritten.
+	 */
+	public getJSON(): object {
+
+		return this.toJSON();
 
 	}
 
