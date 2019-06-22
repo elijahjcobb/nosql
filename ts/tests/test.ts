@@ -36,12 +36,6 @@ ECSQLDatabase.init({
 
 (async (): Promise<void> => {
 
-
-	let u: User = await ECSQLQuery.getObjectWithId(User, "NMJJeXoxEMVZt66J");
-	console.log(u.toJSON());
-	console.log(u.getFilteredJSON("firstName", "id"));
-
-
 })().then(() => {}).catch((err: any) => {
 
 	if (err instanceof ECErrorStack) err.print();
