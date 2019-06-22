@@ -379,6 +379,7 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 			let cmd: ECSQLCMD = ECSQLCMD.insert(this.table);
 			map.forEach((key: string, value: ECSQLValue) => cmd.set(key, value));
+			cmd = cmd.set("id", newID);
 
 			try {
 
