@@ -371,15 +371,16 @@ export abstract class ECSQLObject<Props extends ECSQLObjectPropType> {
 
 		let createProcess: () => Promise<string> = async (): Promise<string> => {
 
-			this.updatedAt = Date.now();
-			this.createdAt = Date.now();
-
 			let map: ECSQLObjectRow<Props> = await this.encode();
 			let newID: string = ECGenerator.randomId();
 
-			let cmd: ECSQLCMD = ECSQLCMD.insert(this.table);
+			let cmd: ECSQLCMD = ECSQLCMD
+				.insert(this.table)
+				.set("id", newID)
+				.set("updatedAt", Date.now())
+				.set("createdAt", Date.now());
+
 			map.forEach((key: string, value: ECSQLValue) => cmd.set(key, value));
-			cmd = cmd.set("id", newID);
 
 			try {
 
