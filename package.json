@@ -1,6 +1,6 @@
 {
   "name": "@elijahjcobb/nosql",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "A smart SQL database manager with easy and quick to use query and object management features.",
   "main": "dist/index",
   "types": "dist/index",
