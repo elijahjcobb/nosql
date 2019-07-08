@@ -25,6 +25,14 @@
 import { ECSQLCommandable } from "./ECSQLCommandable";
 import { ECErrorStack, ECErrorOriginType, ECErrorType } from "@elijahjcobb/error";
 
+/*
+
+ SELECT *
+FROM terms
+WHERE id IN (SELECT term_id FROM terms_relation WHERE taxonomy='categ');
+
+ */
+
 /**
  * Different operators that can be used in a ECSQLFilter instance.
  */
