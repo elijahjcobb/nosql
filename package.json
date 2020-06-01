@@ -41,17 +41,17 @@
     "@elijahjcobb/encryption": "latest",
     "@elijahjcobb/error": "latest",
     "@elijahjcobb/sql-cmd": "latest",
-    "@types/jest": "^24.0.14",
+    "@types/jest": "latest",
     "@types/mysql": "latest",
-    "@types/node": "^12.0.8",
+    "@types/node": "latest",
     "@types/sqlstring": "latest",
-    "jest": "^24.8.0",
+    "jest": "latest",
     "mysql": "latest",
     "sqlstring": "latest"
   },
   "devDependencies": {
-    "tslint": "^5.17.0",
-    "typescript": "^3.5.2"
+    "tslint": "latest",
+    "typescript": "latest"
   },
   "files": [
     "dist"
