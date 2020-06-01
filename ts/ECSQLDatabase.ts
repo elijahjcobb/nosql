@@ -37,6 +37,7 @@ export type ECSQLInitObject = {
 	port?: number,
 	verbose?: boolean,
 	duplicateKeys?: { [key: string]: string }
+	insecureAuth?: boolean
 };
 
 /**
@@ -139,13 +140,16 @@ export class ECSQLDatabase {
 	 */
 	public static init(initObject: ECSQLInitObject): void {
 
+		if (initObject.insecureAuth === undefined) initObject.insecureAuth = false;
+
 		ECSQLDatabase.databasePool = SQL.createPool({
 			connectionLimit: 100,
 			host: initObject.host || "localhost",
 			user: initObject.username || "root",
 			password: initObject.password || "",
 			database: initObject.database,
-			port: initObject.port || 3306
+			port: initObject.port || 3306,
+			insecureAuth: initObject.insecureAuth
 		});
 
 		if (initObject.duplicateKeys) ECSQLDatabase.duplicateKeys = initObject.duplicateKeys;
